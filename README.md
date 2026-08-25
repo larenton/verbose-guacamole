@@ -19,16 +19,46 @@ or **$** (`days × annualCost ÷ 220`).
 
 ## Status
 
-Built incrementally against the brief's build order (§9):
+Built incrementally against the brief's build order (§9). Steps 1–8 are
+complete; scenario mode (§9.9) is intentionally not started.
 
 - [x] **1. Engine + types + tests** — data model, derived calculations, unit
       conversion, aggregation at every level, tolerance bands, pinch detection,
       and a one-time Excel importer. Migration fidelity is proven by a golden
-      test that reproduces the seed workbook's `By Product` and
-      `Cost by Product` sheets cell-for-cell.
-- [ ] 2. Excel import UI · 3. Portfolio grid · 4. Unit toggle · 5. Editing ·
-      6. Headroom view + rails + pinch panel · 7. Product view + person panel ·
-      8. Export
+      test reproducing the seed workbook's `By Product` and `Cost by Product`
+      cell-for-cell.
+- [x] **2. Excel import** — dialog with a parse preview + skipped/warnings
+      report, behind a destructive "Replace all data" confirm.
+- [x] **3. Portfolio grid** — the traffic sheet alive: collapsible people,
+      30 months, sticky person column + month/quarter/intake headers,
+      utilisation tinting, product-colour chips, right-hand horizon summary.
+- [x] **4. Unit toggle** — global Days / FTE / $ across every figure.
+- [x] **5. Editing** — spreadsheet keyboard model (type-over, Enter/Tab/Esc,
+      arrows, range select, drag-fill, paste from Excel), 60-deep undo/redo,
+      autosave to IndexedDB with a Saved / error state.
+- [x] **6. Headroom view + rails + pinch panel** — remaining-capacity grid with
+      a "≥ N days free between X and Y" filter; the signature headroom rail
+      under every row; a persistent pinch panel splitting tolerance vs breach
+      with per-pinch rationale and CSV export.
+- [x] **7. Product view + person panel** — products × months with a portfolio
+      total, per-cell people breakdown, and copy / CSV / PNG; a person side
+      panel with editable rate & FTE, totals, worst month, and a headroom
+      sparkline.
+- [x] **8. Export** — full workbook with `By Product` / `Cost by Product` as
+      live formulas (SUMIF / SUMPRODUCT over the Team Schedule) plus cached
+      values, blue/green/black + fill conventions, no external links. Verified
+      by a round-trip test that matches the source cell-for-cell.
+- [ ] 9. Scenario mode — not started (the agreed stopping point).
+
+## Verification
+
+- **31 engine/export tests** pass (`npm test`): 20 pure engine, 6 golden
+  migration-fidelity, 5 export round-trip. The golden and export suites need
+  the seed workbook and self-skip in CI where it is absent.
+- Every §10 acceptance criterion has been checked in a real browser against the
+  production build (import fidelity, live single-cell recompute, unit toggle,
+  the headroom question, the LD2 tolerance pinch, Excel export, save/reload
+  persistence, and `npm run preview`).
 
 ## Local use
 

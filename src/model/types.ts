@@ -110,6 +110,14 @@ export interface Plan {
    */
   focusByLine: Record<string, string>;
   settings: Settings;
+  /**
+   * Plan-level UI annotations that should travel with the plan (saved to file
+   * and IndexedDB). Not a core entity — kept separate from the six.
+   */
+  annotations?: {
+    /** One-line rationale per pinch point, keyed by `${personId}|${monthId}`. */
+    pinchRationales?: Record<string, string>;
+  };
   meta: {
     schemaVersion: number;
     importedAt?: string;

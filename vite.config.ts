@@ -11,5 +11,8 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: true,
+    // The two SheetJS libraries are lazy-loaded (import/export only), so their
+    // large chunks never hit the initial load.
+    chunkSizeWarningLimit: 700,
   },
 });
