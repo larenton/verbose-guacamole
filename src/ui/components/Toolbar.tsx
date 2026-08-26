@@ -5,6 +5,7 @@ import { Segmented } from './Segmented';
 import { Button } from './Button';
 import { SaveIndicator, FileButtons } from './SaveIndicator';
 import { SnapshotsDialog } from './SnapshotsDialog';
+import { ClearDataDialog } from './ClearDataDialog';
 
 interface Props {
   onImport: () => void;
@@ -12,6 +13,7 @@ interface Props {
 
 export function Toolbar({ onImport }: Props) {
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
   const plan = usePlanStore((s) => s.plan);
   const unit = usePlanStore((s) => s.unit);
   const setUnit = usePlanStore((s) => s.setUnit);
@@ -104,6 +106,13 @@ export function Toolbar({ onImport }: Props) {
         <Button onClick={onImport} title="Import a workbook (destructive)">
           Import…
         </Button>
+        <Button
+          variant="danger"
+          onClick={() => setClearOpen(true)}
+          title="Wipe everything this browser holds — for a shared machine"
+        >
+          Clear data
+        </Button>
       </div>
 
       <div className="w-full sm:w-auto">
@@ -111,6 +120,7 @@ export function Toolbar({ onImport }: Props) {
       </div>
 
       {historyOpen && <SnapshotsDialog onClose={() => setHistoryOpen(false)} />}
+      {clearOpen && <ClearDataDialog onClose={() => setClearOpen(false)} />}
     </header>
   );
 }

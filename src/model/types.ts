@@ -20,7 +20,7 @@ export interface Person {
   pool: string;
   /** Fully-loaded annual cost in $. */
   annualCost: number;
-  /** Availability to the portfolio as a fraction of 1.0 FTE (Alan Hatem = 0.2). */
+  /** Availability to the portfolio as a fraction of 1.0 FTE (a fractional role = 0.2). */
   fteAvailability: number;
   fundingTreatment: string;
   active: boolean;

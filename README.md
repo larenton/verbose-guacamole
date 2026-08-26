@@ -60,41 +60,63 @@ complete; scenario mode (§9.9) is intentionally not started.
   the headroom question, the LD2 tolerance pinch, Excel export, save/reload
   persistence, and `npm run preview`).
 
-## Local use
-
-This app is **not deployed** and must not be. The plan contains named staff and
-salary-derived daily rates; a GitHub Pages site built from a private repo is
-still public. Run it locally only.
+## Run it
 
 ```bash
 npm install
 npm run dev        # day-to-day use
-npm run build      # production bundle (fully static, hash-routed)
-npm run preview    # verify the production build
-npm test           # engine tests
+npm run build      # production bundle (static, hash-routed)
+npm run preview    # verify the production build (served under /verbose-guacamole/)
+npm test           # engine + privacy + export tests
 npm run typecheck
 ```
 
-The build is a fully static bundle with a relative base path, so it runs from
-`localhost`, a `file://` path, or any authenticated static host without a
-rebuild.
+## Public deployment & privacy
+
+This site **is** published to GitHub Pages — and it is safe to be public because
+**no real data ever reaches the repository or the server**:
+
+- **Names → initials at import.** When you import a workbook, the import dialog
+  reduces every person to initials (e.g. `Luke Renton → LR`), applied *before*
+  anything touches IndexedDB or the UI. Only initials are stored, exported, or
+  shown; full names live in the open browser tab and are discarded on import.
+  This is enforced by `src/import/anonymise.ts` and tested (including a
+  "no full name leaks anywhere" guarantee).
+- **Real numbers stay local.** Salary-derived figures live only in the visitor's
+  own browser (IndexedDB) and in `.json` files they save themselves. Nothing is
+  sent to a server; there is no backend.
+- **Nothing sensitive in git.** `*.xlsx`, `*.plan.json`, `/data/`, and `.env*`
+  are gitignored. The seed workbook is never committed.
+- **Fictional demo.** The site ships empty; an "Explore the demo" button loads a
+  wholly invented dataset (`src/demo/demoPlan.ts`) so the public URL isn't blank.
+- **One-click wipe.** A prominent **Clear data** control erases everything this
+  browser holds — for use on a shared or public machine.
+
+### Enabling Pages (one-time)
+
+In the GitHub repo: **Settings → Pages → Build and deployment → Source:
+"GitHub Actions"**. Then every push to `main` runs
+`.github/workflows/deploy.yml` (typecheck + tests + build) and publishes to
+`https://<owner>.github.io/verbose-guacamole/`. The Vite `base` is
+`/verbose-guacamole/`; the app uses hash routing so a refresh never 404s, and a
+`404.html` fallback is emitted for safety.
 
 ## Seed data & durability
 
-- **Import once.** The workbook `H2_Team_Schedule_Resourcing_v3.xlsx` seeds the
-  app once at setup. After that **the app is the source of truth** and Excel is
-  an export format only.
-- The workbook and any exported plan JSON are **gitignored** — they contain
-  salary data.
-- The plan autosaves to IndexedDB; **Save/Open to a `.json` file** gives real
-  version history in a repo or synced folder.
+- **Import once.** A workbook seeds the app once at setup (names → initials).
+  After that **the app is the source of truth** and Excel is an export format.
+- The plan autosaves to IndexedDB, keeps a rolling set of the last ~20 local
+  snapshots, and **Save/Open to a `.json` file** gives real version history in a
+  repo or synced folder.
 
 ## Architecture
 
 - **`src/model`** — the six stored entities and product metadata.
 - **`src/engine`** — pure derived calculations (`calc`, `units`, `aggregate`,
   `pinch`). This is the product; it is unit-tested exhaustively.
-- **`src/import`** — the one-time SheetJS workbook parser.
+- **`src/import`** — the one-time SheetJS workbook parser and the name→initials
+  anonymiser applied at import.
+- **`src/demo`** — the fictional demo dataset served on the public URL.
 
 Stack: Vite + React + TypeScript + Tailwind, Zustand for state, `idb` for the
 working store, SheetJS for Excel, Vitest for the engine tests.

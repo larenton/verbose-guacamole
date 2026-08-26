@@ -60,6 +60,8 @@ export interface PlanState {
   // actions
   init: () => Promise<void>;
   replaceAll: (plan: Plan) => void;
+  loadDemo: () => void;
+  clearLocalData: () => Promise<void>;
   editCell: (personId: string, productId: string, monthId: string, days: number) => void;
   editMany: (edits: CellEdit[]) => void;
   addLine: (personId: string, productId: string) => void;
@@ -190,6 +192,33 @@ export const usePlanStore = create<PlanState>((set, get) => {
       });
       scheduleAutosave(get, set);
       void db.pushSnapshot(plan, 'Imported workbook').catch(() => undefined);
+    },
+
+    loadDemo() {
+      // Lazy import so the fictional dataset never weighs on the initial bundle.
+      void import('../demo/demoPlan').then(({ buildDemoPlan }) => {
+        get().replaceAll(buildDemoPlan());
+      });
+    },
+
+    async clearLocalData() {
+      await db.clearAll();
+      set({
+        plan: null,
+        idx: null,
+        past: [],
+        future: [],
+        selectedPersonId: null,
+        pinchDismissed: false,
+        saveState: 'idle',
+        saveError: null,
+        lastAutosaveAt: null,
+        fileHandle: undefined,
+        fileName: null,
+        lastFileSaveAt: null,
+        dirtySinceFileSave: false,
+        headroomFilter: { ...DEFAULT_FILTER },
+      });
     },
 
     editCell(personId, productId, monthId, days) {

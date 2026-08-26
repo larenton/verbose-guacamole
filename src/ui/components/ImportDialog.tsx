@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import type { ParseResult } from '../../import/parseWorkbook';
+import { applyInitials, defaultInitialsMap } from '../../import/anonymise';
 import { usePlanStore } from '../../store/planStore';
 import { Modal } from './Modal';
 import { Button } from './Button';
@@ -14,6 +15,7 @@ export function ImportDialog({ onClose }: Props) {
   const hasExisting = usePlanStore((s) => s.plan !== null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [result, setResult] = useState<ParseResult | null>(null);
+  const [initials, setInitials] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>('');
 
@@ -26,6 +28,7 @@ export function ImportDialog({ onClose }: Props) {
       const parsed = parsePlanFromArrayBuffer(buf, file.name);
       setFileName(file.name);
       setResult(parsed);
+      setInitials(defaultInitialsMap(parsed.plan));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
@@ -33,7 +36,10 @@ export function ImportDialog({ onClose }: Props) {
 
   function commit() {
     if (!result) return;
-    replaceAll(result.plan);
+    // Apply the name→initials mapping BEFORE anything persists. Only initials
+    // are ever written to IndexedDB, exported, or shown.
+    const anonymised = applyInitials(result.plan, initials);
+    replaceAll(anonymised);
     onClose();
   }
 
@@ -42,7 +48,7 @@ export function ImportDialog({ onClose }: Props) {
   return (
     <Modal
       title="Import workbook"
-      subtitle="One-time migration. After import, the app is the source of truth; Excel becomes export-only."
+      subtitle="One-time migration. Names are replaced with initials at import — only initials are stored, exported, or shown."
       onClose={onClose}
       wide
       footer={
@@ -103,35 +109,55 @@ export function ImportDialog({ onClose }: Props) {
               <Stat label="Assignments" value={report.assignmentCount} />
             </div>
 
-            <div className="max-h-52 overflow-auto rounded border border-slate-200">
-              <table className="w-full text-left text-xs">
-                <thead className="sticky top-0 bg-slate-100 text-slate-600">
-                  <tr>
-                    <th className="px-2 py-1 font-medium">Person</th>
-                    <th className="px-2 py-1 font-medium">Role</th>
-                    <th className="px-2 py-1 text-right font-medium">Annual $</th>
-                    <th className="px-2 py-1 text-right font-medium">FTE</th>
-                    <th className="px-2 py-1 text-right font-medium tabular">$/day</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result!.plan.people.map((p) => (
-                    <tr key={p.id} className="border-t border-slate-100">
-                      <td className="px-2 py-1 text-slate-800">{p.name}</td>
-                      <td className="px-2 py-1 text-slate-500">{p.role}</td>
-                      <td className="px-2 py-1 text-right tabular text-slate-700">
-                        {p.annualCost.toLocaleString()}
-                      </td>
-                      <td className="px-2 py-1 text-right tabular text-slate-700">
-                        {formatDays(p.fteAvailability)}
-                      </td>
-                      <td className="px-2 py-1 text-right tabular text-slate-500">
-                        {Math.round(p.annualCost / result!.plan.settings.workingDaysPerYear)}
-                      </td>
+            <div>
+              <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-slate-600">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <rect x="3" y="7" width="10" height="7" rx="1" stroke="currentColor" strokeWidth="1.3" />
+                  <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" strokeWidth="1.3" />
+                </svg>
+                Name → initials mapping (edit as needed)
+              </p>
+              <div className="max-h-52 overflow-auto rounded border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="sticky top-0 bg-slate-100 text-slate-600">
+                    <tr>
+                      <th className="px-2 py-1 font-medium">Name (not stored)</th>
+                      <th className="px-2 py-1 font-medium">Initials (stored)</th>
+                      <th className="px-2 py-1 font-medium">Role</th>
+                      <th className="px-2 py-1 text-right font-medium">Annual $</th>
+                      <th className="px-2 py-1 text-right font-medium">FTE</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {result!.plan.people.map((p) => (
+                      <tr key={p.id} className="border-t border-slate-100">
+                        <td className="px-2 py-1 text-slate-400 line-through decoration-slate-300">{p.name}</td>
+                        <td className="px-2 py-1">
+                          <input
+                            value={initials[p.id] ?? ''}
+                            onChange={(e) =>
+                              setInitials((m) => ({ ...m, [p.id]: e.target.value.toUpperCase().slice(0, 6) }))
+                            }
+                            aria-label={`Initials for ${p.name}`}
+                            className="tabular w-16 rounded border border-slate-300 px-1.5 py-0.5 font-semibold text-slate-800 focus:border-slate-500 focus:outline-none"
+                          />
+                        </td>
+                        <td className="px-2 py-1 text-slate-500">{p.role}</td>
+                        <td className="px-2 py-1 text-right tabular text-slate-700">
+                          {p.annualCost.toLocaleString()}
+                        </td>
+                        <td className="px-2 py-1 text-right tabular text-slate-700">
+                          {formatDays(p.fteAvailability)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-1 text-[11px] text-slate-500">
+                Full names stay in this browser tab only and are discarded on import. Salary figures
+                are kept locally (IndexedDB) and never committed to the repository.
+              </p>
             </div>
 
             {(report.skipped.length > 0 || report.warnings.length > 0) && (

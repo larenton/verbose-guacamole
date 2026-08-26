@@ -121,6 +121,7 @@ function Legend() {
 
 function EmptyState({ onImport }: { onImport: () => void }) {
   const openFromFile = usePlanStore((s) => s.openFromFile);
+  const loadDemo = usePlanStore((s) => s.loadDemo);
   return (
     <main className="mx-auto flex min-h-full max-w-xl flex-col justify-center gap-5 p-8">
       <div>
@@ -128,19 +129,25 @@ function EmptyState({ onImport }: { onImport: () => void }) {
         <h1 className="mt-1 text-2xl font-semibold text-slate-900">H2 Resourcing Dashboard</h1>
       </div>
       <p className="text-sm leading-relaxed text-slate-600">
-        No plan loaded yet. Seed the app once from the traffic-sheet workbook, or open a plan you
-        saved earlier. After import, this app is the source of truth —{' '}
-        <span className="tabular">capacity − allocated = headroom</span>.
+        A local-first capacity planner. Every figure is the same number expressed three ways —{' '}
+        <span className="tabular">capacity − allocated = headroom</span> — in days, FTE, or dollars.
+        Nothing you load leaves this browser.
       </p>
-      <div className="flex gap-2">
-        <Button variant="primary" onClick={onImport}>
-          Import workbook…
+      <div className="flex flex-wrap gap-2">
+        <Button variant="primary" onClick={() => loadDemo()}>
+          Explore the demo
         </Button>
+        <Button onClick={onImport}>Import workbook…</Button>
         <Button onClick={() => void openFromFile()}>Open plan file…</Button>
       </div>
-      <p className="text-xs text-slate-400">
-        Local-first. Your plan autosaves to this browser and never leaves it.
-      </p>
+      <div className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+        <p>
+          <span className="font-medium text-slate-600">Privacy.</span> The demo is entirely
+          fictional. When you import a workbook, real names are replaced with initials at import —
+          only initials are ever stored, and salary figures stay in this browser (IndexedDB), never
+          on the server or in the source repository.
+        </p>
+      </div>
     </main>
   );
 }

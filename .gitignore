@@ -14,6 +14,13 @@ H2_Team_Schedule_Resourcing_v3.xlsx
 plan-*.json
 h2-plan*.json
 
+# Any local data drop (spreadsheets, exports, scratch datasets). Never commit.
+/data/
+
+# Secrets / environment. Never commit.
+.env
+.env.*
+
 # Editor / OS
 .DS_Store
 .vscode/

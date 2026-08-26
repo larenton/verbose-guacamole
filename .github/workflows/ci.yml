@@ -1,11 +1,9 @@
 name: CI
 
-# Source-control CI only. This project is local-first and is NOT deployed:
-# the plan contains named staff and salary-derived rates, so there is no
-# published site (GitHub Pages from a private repo would still be public).
+# Checks on pull requests. Pushes to main are checked and deployed by
+# deploy.yml. The published site carries no real data — names are reduced to
+# initials at import and salary figures stay in the visitor's own browser.
 on:
-  push:
-    branches: [main]
   pull_request:
 
 jobs:
