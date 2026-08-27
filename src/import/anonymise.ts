@@ -3,7 +3,7 @@ import { lineKey } from '../model/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Privacy: real names must never leave the browser. At import time the user maps
-// each person to initials (e.g. "Luke Renton" → "LR"). The mapping is applied
+// each person to initials (e.g. "Jamie Rivera" → "JR"). The mapping is applied
 // BEFORE anything touches IndexedDB or the UI, so only initials are ever stored,
 // exported, or displayed. Person ids are re-derived from the initials too, so no
 // full name survives anywhere in the persisted plan.

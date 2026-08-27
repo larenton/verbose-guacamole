@@ -77,7 +77,7 @@ This site **is** published to GitHub Pages — and it is safe to be public becau
 **no real data ever reaches the repository or the server**:
 
 - **Names → initials at import.** When you import a workbook, the import dialog
-  reduces every person to initials (e.g. `Luke Renton → LR`), applied *before*
+  reduces every person to initials (e.g. `Jamie Rivera → JR`), applied *before*
   anything touches IndexedDB or the UI. Only initials are stored, exported, or
   shown; full names live in the open browser tab and are discarded on import.
   This is enforced by `src/import/anonymise.ts` and tested (including a
