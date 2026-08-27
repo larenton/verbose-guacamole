@@ -31,6 +31,13 @@ jobs:
           node-version: 20
           cache: npm
 
+      # Enables GitHub Pages (build type: GitHub Actions) automatically on first
+      # run, so no manual Settings toggle is needed.
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
       - run: npm ci
 
       - name: Type-check
