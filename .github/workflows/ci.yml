@@ -1,0 +1,31 @@
+name: CI
+
+# Checks on pull requests. Pushes to main are checked and deployed by
+# deploy.yml. The published site carries no real data — names are reduced to
+# initials at import and salary figures stay in the visitor's own browser.
+on:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Engine tests
+        # The seed workbook is gitignored (salary data), so the migration-fidelity
+        # golden suite self-skips here; the pure engine tests always run.
+        run: npm test
+
+      - name: Build
+        run: npm run build

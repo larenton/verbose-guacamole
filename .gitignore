@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Seed workbook — contains named staff and salary-derived daily rates. Never commit.
+H2_Team_Schedule_Resourcing_v3.xlsx
+*.xlsx
+
+# Exported plan JSON — contains salary data. Never commit.
+*.plan.json
+plan-*.json
+h2-plan*.json
+
+# Any local data drop (spreadsheets, exports, scratch datasets). Never commit.
+/data/
+
+# Secrets / environment. Never commit.
+.env
+.env.*
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+npm-debug.log*
+*.local
